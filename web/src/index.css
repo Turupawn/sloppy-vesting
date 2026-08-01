@@ -1,0 +1,687 @@
+/*
+  SloppySale — money-terminal green.
+
+  The brief: degen but slick. One color means money (spring green),
+  one color means the wall (amber), everything else stays out of the
+  way. Unbounded — the face of web3 wordmarks — carries identity in a
+  handful of places; JetBrains Mono carries every number, always
+  tabular, because the whole page is a counter and counters must not
+  wobble.
+
+  The signature is the stream chart and the pump-style number above
+  it. Nothing else on the page is allowed to compete with them.
+*/
+
+:root {
+  /* Surfaces: near-black with a green cast, like a terminal warmed up. */
+  --bg: #070b09;
+  --card: #0d1512;
+  --card-raised: #101a16;
+  --border: #1d2b24;
+  --border-strong: #2a3e33;
+
+  /* Ink. */
+  --ink: #e7f5ed;
+  --muted: #8fa89b;
+  --faint: #5f7469;
+
+  /* The money color. Validated against --card (dataviz palette check:
+     contrast >= 3:1; green/amber CVD gap rides on hatch + labels). */
+  --green: #2ce08a;
+  --green-soft: rgba(44, 224, 138, 0.14);
+  --green-glow: rgba(44, 224, 138, 0.45);
+
+  /* The cliff and everything still locked. */
+  --amber: #f5b94a;
+  --amber-soft: rgba(245, 185, 74, 0.12);
+
+  /* Errors only. Never on the chart. */
+  --red: #ff7a6b;
+
+  --display: "Unbounded Variable", system-ui, sans-serif;
+  --mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", monospace;
+
+  --radius: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 15px;
+  line-height: 1.55;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  /* A faint radial breath behind the content. Static: the motion
+     budget belongs to the chart. */
+  background:
+    radial-gradient(1100px 480px at 50% -120px, rgba(44, 224, 138, 0.07), transparent 70%),
+    var(--bg);
+  min-height: 100vh;
+}
+
+.page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 28px 20px 80px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Topbar                                                              */
+/* ------------------------------------------------------------------ */
+
+.topbar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px 16px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 26px;
+}
+
+.topbar__brand {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.topbar__brand-accent {
+  color: var(--green);
+}
+
+.topbar__sub {
+  grid-column: 1 / -1;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.topbar__address {
+  color: var(--muted);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.topbar__address[href]:hover {
+  color: var(--green);
+  text-decoration: underline;
+}
+
+.topbar__network {
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 1px 10px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.wallet {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wallet__account {
+  font-size: 13px;
+  color: var(--green);
+}
+
+.wallet__error {
+  font-size: 12px;
+  color: var(--red);
+  max-width: 300px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Cards                                                               */
+/* ------------------------------------------------------------------ */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  margin-bottom: 18px;
+}
+
+.card--stream {
+  border-color: var(--border-strong);
+  background:
+    linear-gradient(180deg, rgba(44, 224, 138, 0.045), transparent 140px),
+    var(--card);
+}
+
+.card--empty {
+  border-style: dashed;
+  text-align: center;
+}
+
+.card--dev {
+  border-style: dashed;
+}
+
+.card__hint {
+  margin: 6px 0;
+  color: var(--muted);
+}
+
+.card__eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px;
+  margin: 0 0 14px;
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.card__address {
+  font-family: var(--mono);
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--faint);
+  word-break: break-all;
+  text-decoration: none;
+}
+
+.card__address[href]:hover {
+  color: var(--green);
+  text-decoration: underline;
+}
+
+/* ------------------------------------------------------------------ */
+/* The hero number: the pump                                           */
+/* ------------------------------------------------------------------ */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 4px 0 14px;
+}
+
+.hero__label {
+  font-family: var(--display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.hero__number {
+  font-size: clamp(38px, 7vw, 56px);
+  font-weight: 640;
+  line-height: 1.1;
+  color: var(--green);
+  text-shadow: 0 0 24px var(--green-glow);
+  letter-spacing: -0.01em;
+}
+
+.hero__number--amber {
+  color: var(--amber);
+  text-shadow: 0 0 24px rgba(245, 185, 74, 0.35);
+}
+
+.hero__symbol {
+  font-size: 0.42em;
+  font-weight: 500;
+  color: var(--muted);
+  text-shadow: none;
+}
+
+.hero__sub {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ------------------------------------------------------------------ */
+/* The chart                                                           */
+/* ------------------------------------------------------------------ */
+
+.chart {
+  position: relative;
+  margin: 4px 0 16px;
+}
+
+.chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+}
+
+.chart__grid {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+
+.chart__base {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+
+.chart__schedule {
+  fill: none;
+  stroke: var(--faint);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 5;
+}
+
+.chart__edge {
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.chart__cliff {
+  stroke: var(--amber);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.chart__claimed {
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 2 5;
+}
+
+.chart__needle {
+  stroke: var(--ink);
+  stroke-opacity: 0.35;
+  stroke-width: 1;
+}
+
+.chart__dot {
+  fill: var(--green);
+  filter: drop-shadow(0 0 6px var(--green-glow));
+}
+
+.chart__crosshair {
+  stroke: var(--ink);
+  stroke-opacity: 0.2;
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.chart__label {
+  font-family: var(--mono);
+  font-size: 10px;
+  fill: var(--muted);
+}
+
+.chart__label--cliff {
+  fill: var(--amber);
+}
+
+.chart__label--claimed {
+  fill: var(--muted);
+}
+
+.chart__tick {
+  font-family: var(--mono);
+  font-size: 10px;
+  fill: var(--faint);
+}
+
+.chart__tick--center {
+  text-anchor: middle;
+}
+
+.chart__tick--end {
+  text-anchor: end;
+}
+
+.chart__tooltip {
+  position: absolute;
+  top: 2px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  background: var(--card-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  padding: 4px 9px;
+  font-size: 11px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.chart__tooltip-time {
+  color: var(--faint);
+}
+
+.chart__tooltip-value {
+  color: var(--green);
+}
+
+/* ------------------------------------------------------------------ */
+/* Buy card                                                            */
+/* ------------------------------------------------------------------ */
+
+.price {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 16px;
+}
+
+.price__amount {
+  font-family: var(--display);
+  font-size: clamp(19px, 3.4vw, 26px);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.price__terms {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.state {
+  margin: 14px 0;
+  padding: 12px 14px;
+  border-left: 3px solid var(--green);
+  background: var(--green-soft);
+  border-radius: 0 6px 6px 0;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.purchase {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: 14px;
+  margin: 16px 0;
+}
+
+.purchase__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.purchase__label {
+  font-family: var(--display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.purchase__entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.purchase__entry:focus-within {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px var(--green-soft);
+}
+
+.purchase__input {
+  width: 100%;
+  min-width: 0;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.purchase__unit {
+  color: var(--faint);
+  font-size: 13px;
+}
+
+.purchase__arrow {
+  color: var(--faint);
+  padding-bottom: 12px;
+}
+
+.purchase__quote {
+  font-size: 20px;
+  color: var(--green);
+  padding: 10px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ------------------------------------------------------------------ */
+/* Buttons                                                             */
+/* ------------------------------------------------------------------ */
+
+.button {
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--card-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: border-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--green);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.button--primary {
+  width: 100%;
+  padding: 14px 18px;
+  font-size: 14px;
+  color: #05130c;
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.button--primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 24px var(--green-glow);
+}
+
+.button--primary:disabled {
+  background: var(--card-raised);
+  color: var(--muted);
+  border-color: var(--border-strong);
+  opacity: 1;
+}
+
+.button--ghost {
+  background: none;
+  border-color: var(--border);
+  color: var(--muted);
+}
+
+/* ------------------------------------------------------------------ */
+/* Book rows and notes                                                 */
+/* ------------------------------------------------------------------ */
+
+.book {
+  margin-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+.book__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.book__label {
+  color: var(--muted);
+}
+
+.book__value {
+  color: var(--ink);
+}
+
+a.book__value--link {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--faint);
+  text-underline-offset: 3px;
+}
+
+a.book__value--link:hover {
+  color: var(--green);
+  text-decoration-color: var(--green);
+}
+
+.actions {
+  margin: 6px 0 4px;
+}
+
+.actions__note {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.actions__note--error {
+  color: var(--red);
+}
+
+/* ------------------------------------------------------------------ */
+/* Dev panel                                                           */
+/* ------------------------------------------------------------------ */
+
+.dev {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dev__label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.dev__amount {
+  font-size: 24px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Notices                                                             */
+/* ------------------------------------------------------------------ */
+
+.notice {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  color: var(--muted);
+}
+
+.notice--error {
+  border-color: rgba(255, 122, 107, 0.4);
+  color: var(--ink);
+}
+
+.notice--error p {
+  margin: 0 0 8px;
+}
+
+.notice__action {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.notice code {
+  color: var(--green);
+}
+
+/* ------------------------------------------------------------------ */
+/* Small screens                                                       */
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 560px) {
+  .purchase {
+    grid-template-columns: 1fr;
+  }
+
+  .purchase__arrow {
+    display: none;
+  }
+
+  .topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .wallet {
+    justify-content: flex-start;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Reduced motion: numbers still update, nothing spins or glides.      */
+/* ------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  .button,
+  .button--primary:hover:not(:disabled) {
+    transition: none;
+    transform: none;
+  }
+}

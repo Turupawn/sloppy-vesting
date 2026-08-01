@@ -1,0 +1,17 @@
+# Compiler files
+cache/
+out/
+
+# Registros de despliegue de forge. Lo que el frontend necesita queda
+# en web/public/deployments.json; esto es historial local.
+broadcast/
+
+# Docs
+docs/
+
+# Dotenv file
+.env
+
+# Cobertura (perfil aparte, ver foundry.toml)
+out-coverage/
+cache-coverage/

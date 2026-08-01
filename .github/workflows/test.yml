@@ -1,0 +1,93 @@
+name: CI
+
+permissions: {}
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  contratos:
+    name: Contratos
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      # Perfil "ci": mismas pruebas, mucho mas fuzzing (ver foundry.toml)
+      FOUNDRY_PROFILE: ci
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Show Forge version
+        run: forge --version
+
+      - name: Formato
+        run: forge fmt --check
+
+      - name: Linter
+        run: forge lint
+
+      - name: Build
+        run: forge build --sizes
+
+      - name: Pruebas (unitarias, fuzz e invariantes)
+        run: forge test -vvv
+
+  e2e:
+    name: End to end
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: Compilar contratos
+        run: forge build
+
+      - name: Instalar dependencias del frontend
+        run: pnpm install --frozen-lockfile
+        working-directory: web
+
+      - name: Typecheck y build
+        run: pnpm build
+        working-directory: web
+
+      - name: Linter
+        run: pnpm lint
+        working-directory: web
+
+      - name: Instalar navegador
+        run: pnpm exec playwright install --with-deps chromium
+        working-directory: web
+
+      # Playwright levanta anvil y el dev server por su cuenta.
+      - name: Pruebas end to end
+        run: pnpm e2e
+        working-directory: web
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: web/test-results/
+          retention-days: 7
