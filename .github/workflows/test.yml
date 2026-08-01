@@ -54,7 +54,11 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
 
+      # La version va aca porque el package.json vive en web/ y la
+      # action solo lee el campo packageManager de la raiz del repo.
       - uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: 24
