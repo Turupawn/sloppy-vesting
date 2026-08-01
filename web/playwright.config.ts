@@ -28,7 +28,10 @@ export default defineConfig({
       timeout: 30_000,
     },
     {
-      command: "pnpm vite --port 5173 --strictPort",
+      // --host explicito: vite escucha en "localhost", que en CI
+      // resuelve a ::1, y el chequeo de arriba prueba 127.0.0.1.
+      // Sin esto el server levanta pero Playwright nunca lo ve.
+      command: "pnpm vite --host 127.0.0.1 --port 5173 --strictPort",
       url: "http://127.0.0.1:5173",
       reuseExistingServer: true,
       timeout: 60_000,
